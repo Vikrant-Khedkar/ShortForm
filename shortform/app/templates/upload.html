@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Video</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .upload-container {
+            max-width: 500px;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upload-container h2 {
+            text-align: center;
+            font-size: 24px;
+            margin: 0;
+            color: #000000;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .upload-form label {
+            font-size: 18px;
+            color: #000000;
+        }
+
+        .upload-form input[type="text"],
+        .upload-form textarea,
+        .upload-form input[type="file"] {
+            border: 1px solid #d1d1d1;
+            border-radius: 5px;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .upload-form button[type="submit"] {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .upload-form button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="upload-container">
+        <h2>Upload Video</h2>
+        <form class="upload-form" id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="videoTitle">Title:</label>
+            <input type="text" id="videoTitle" required>
+            <label for="videoDescription">Description:</label>
+            <textarea id="videoDescription" required></textarea>
+            <label for="videoFile">Choose a video file (max 30 seconds):</label>
+            <input type="file" id="videoFile" accept="video/*" required>
+            <button type="submit">Upload Video</button>
+            <span class="error-message" id="videoDurationError"></span>
+        </form>
+    </div>
+
+
+    <!-- Add your JavaScript files here if needed -->
+    <script>
+        // JavaScript code to handle form submission and API interactions
+        // Add your JavaScript code here to interact with the API
+
+        const uploadForm = document.getElementById('uploadForm');
+        const videoDurationError = document.getElementById('videoDurationError');
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Form data
+            const formData = new FormData();
+            formData.append('title', document.getElementById('videoTitle').value);
+            formData.append('description', document.getElementById('videoDescription').value);
+            formData.append('video_file', document.getElementById('videoFile').files[0]);
+
+            try {
+                // Send the video data to the API
+                const response = await fetch('/api/videos/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    // Successfully uploaded the video, redirect or show success message
+                    alert('Video uploaded successfully!');
+                    // Clear the form fields
+                    document.getElementById('videoTitle').value = '';
+                    document.getElementById('videoDescription').value = '';
+                    document.getElementById('videoFile').value = '';
+                    videoDurationError.textContent = '';
+                } else {
+                    // Handle errors, display error message
+                    const data = await response.json();
+                    if (data.video_file) {
+                        videoDurationError.textContent = data.video_file[0];
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
